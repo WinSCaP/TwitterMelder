@@ -14,6 +14,6 @@
 + Een knop (Zigbee?)
 
 ### NodeRed Flow
-[*Download deze flow*]:https://github.com/SchipholHerrie/TwitterMelder/blob/main/nodered-flow.json
+[Download deze flow]:nodered-flow.json
 
-[!Flow](nodered-flow.png)
+[Flow](nodered-flow.png)
