@@ -1,0 +1,311 @@
+[{
+	"id": "16c80c68.7ba644",
+	"type": "flightradar24",
+	"z": "6c526bc.dd1f894",
+	"lat": "52.1869",
+	"latType": "num",
+	"lon": "4.4177",
+	"lonType": "num",
+	"name": "Huislocatie",
+	"x": 330,
+	"y": 40,
+	"wires": [
+		["47e16a92.ac3384", "fcfc8c7e.6a2678"]
+	]
+}, {
+	"id": "47e16a92.ac3384",
+	"type": "worldmap",
+	"z": "6c526bc.dd1f894",
+	"name": "",
+	"lat": "52.1869",
+	"lon": "4.4177",
+	"zoom": "",
+	"layer": "OSM",
+	"cluster": "",
+	"maxage": "60",
+	"usermenu": "show",
+	"layers": "show",
+	"panit": "false",
+	"panlock": "true",
+	"hiderightclick": "false",
+	"coords": "none",
+	"path": "worldmap",
+	"x": 1060,
+	"y": 40,
+	"wires": []
+}, {
+	"id": "e5acf7fe.8ed7b8",
+	"type": "debug",
+	"z": "6c526bc.dd1f894",
+	"name": "Debug Output",
+	"active": true,
+	"tosidebar": true,
+	"console": false,
+	"tostatus": false,
+	"complete": "payload",
+	"targetType": "msg",
+	"statusVal": "",
+	"statusType": "auto",
+	"x": 1080,
+	"y": 240,
+	"wires": []
+}, {
+	"id": "fcfc8c7e.6a2678",
+	"type": "geofence",
+	"z": "6c526bc.dd1f894",
+	"name": "Geluidshinder Huis 2KM",
+	"mode": "circle",
+	"inside": "true",
+	"rad": 3127.4418712145584,
+	"points": [],
+	"centre": {
+		"latitude": 52.1869,
+		"longitude": 4.4177
+	},
+	"floor": "",
+	"ceiling": "",
+	"worldmap": true,
+	"outputs": 2,
+	"x": 570,
+	"y": 80,
+	"wires": [
+		["3a5fb082.0e69f"],
+		[]
+	]
+}, {
+	"id": "fdfc94da.5671e8",
+	"type": "function",
+	"z": "6c526bc.dd1f894",
+	"name": "Conversie IATA",
+	"func": "// Een meter is beter (dan feet, inch, etc)\n\n// Bepaal de hoogte in meters\nmsg.payload.altitude = (msg.payload.altitude * 0.3048).toFixed(2);\n// Snelheid in Kmh\nmsg.payload.speed = (msg.payload.speed * 1.852).toFixed(0);\n\n// Vliegveldcodes zeggen mij niets, hoe heet het vliegveld?\nmsg.payload.van = (openflightsCached.findIATA(msg.payload.origin).name);\nmsg.payload.naar = (openflightsCached.findIATA(msg.payload.destination).name);\n\n// TODO: Land van herkomst, aantal KM hemelsbreed tussen bestemming en oorsprong\n\nreturn msg;\n",
+	"outputs": 1,
+	"noerr": 0,
+	"initialize": "",
+	"finalize": "",
+	"libs": [{
+		"var": "openflightsCached",
+		"module": "openflights-cached"
+	}],
+	"x": 540,
+	"y": 240,
+	"wires": [
+		["275348bd.5ec39"]
+	]
+}, {
+	"id": "3a5fb082.0e69f",
+	"type": "switch",
+	"z": "6c526bc.dd1f894",
+	"name": "Minder dan 3 KM hoog",
+	"property": "payload.altitude",
+	"propertyType": "msg",
+	"rules": [{
+		"t": "lt",
+		"v": "9000",
+		"vt": "num"
+	}],
+	"checkall": "true",
+	"repair": false,
+	"outputs": 1,
+	"x": 560,
+	"y": 120,
+	"wires": [
+		["cc14ae44.07b94"]
+	]
+}, {
+	"id": "dd7c739d.5d792",
+	"type": "switch",
+	"z": "6c526bc.dd1f894",
+	"name": "Geen Trauma Heli",
+	"property": "payload.callsign",
+	"propertyType": "msg",
+	"rules": [{
+		"t": "cont",
+		"v": "LIFELN",
+		"vt": "str"
+	}, {
+		"t": "else"
+	}],
+	"checkall": "true",
+	"repair": false,
+	"outputs": 2,
+	"x": 550,
+	"y": 200,
+	"wires": [
+		[],
+		["fdfc94da.5671e8"]
+	]
+}, {
+	"id": "275348bd.5ec39",
+	"type": "function",
+	"z": "6c526bc.dd1f894",
+	"name": "Format Message",
+	"func": "msg.payload.bericht1 = \"Zojuist vloog vlucht \" + msg.payload.flight + \" met callsign \" + msg.payload.callsign + \" hinderlijk overlangs.\"\nmsg.payload.bericht2 = \"Dit vliegtuig vloog op \" + msg.payload.altitude + \" meter hoogte met een snelheid van \" + msg.payload.speed + \"kmh.\"\nmsg.payload.bericht3 = \"De herkomst is: \" + msg.payload.van + \"(\" + msg.payload.origin + \")\"\nmsg.payload.bericht4 = \"De bestemming is: \" + msg.payload.naar + \"(\" + msg.payload.destination + \")\"\nmsg.tweet = \"He @Schiphol, zojuist vloog vlucht \" + msg.payload.flight + \" met callsign \" + msg.payload.callsign + \" hinderlijk over Katwijk. Ze vlogen op \" + msg.payload.altitude + \" meter hoogte. Herkomst: \" + msg.payload.van + \"(\" + msg.payload.origin + \") Bestemming: \" + msg.payload.naar + \"(\" + msg.payload.destination + \")\"\n\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"initialize": "",
+	"finalize": "",
+	"libs": [],
+	"x": 830,
+	"y": 240,
+	"wires": [
+		["e5acf7fe.8ed7b8", "1762f19a.155fe6", "8683f85a.7084e"]
+	]
+}, {
+	"id": "1762f19a.155fe6",
+	"type": "function",
+	"z": "6c526bc.dd1f894",
+	"name": "Format Email",
+	"func": "msg.topic = \"Geluidsoverlast van vlucht: \" + msg.payload.flight + \"(\"+ msg.payload.callsign +\")\"\nmsg.message = msg.payload.bericht1 + \"\\n\" + msg.payload.bericht2 + \"\\n\" + msg.payload.bericht3 + \"\\n\" + msg.payload.bericht4\nmsg.from = \"emailadres\"\nmsg.payload = msg.message\n\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"initialize": "",
+	"finalize": "",
+	"libs": [],
+	"x": 810,
+	"y": 320,
+	"wires": [
+		[]
+	]
+}, {
+	"id": "cc14ae44.07b94",
+	"type": "switch",
+	"z": "6c526bc.dd1f894",
+	"name": "Heeft een bestemming",
+	"property": "payload.destination",
+	"propertyType": "msg",
+	"rules": [{
+		"t": "nnull"
+	}],
+	"checkall": "true",
+	"repair": false,
+	"outputs": 1,
+	"x": 560,
+	"y": 160,
+	"wires": [
+		["dd7c739d.5d792"]
+	]
+}, {
+	"id": "84c5fbd1.248a5",
+	"type": "twitter out",
+	"z": "6c526bc.dd1f894",
+	"twitter": "",
+	"name": "Tweet",
+	"x": 1050,
+	"y": 360,
+	"wires": []
+}, {
+	"id": "8683f85a.7084e",
+	"type": "function",
+	"z": "6c526bc.dd1f894",
+	"name": "Format Tweet",
+	"func": "msg.payload = msg.tweet\n\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"initialize": "",
+	"finalize": "",
+	"libs": [],
+	"x": 820,
+	"y": 360,
+	"wires": [
+		["84c5fbd1.248a5"]
+	]
+}, {
+	"id": "aa2aa6495f115d8d",
+	"type": "comment",
+	"z": "6c526bc.dd1f894",
+	"name": "Het luchtruim heeft meer dan 1 laag",
+	"info": "",
+	"x": 880,
+	"y": 120,
+	"wires": []
+}, {
+	"id": "3e75cdb517f565f5",
+	"type": "comment",
+	"z": "6c526bc.dd1f894",
+	"name": "Alleen de vliegtuigen waar je echt last van hebt",
+	"info": "",
+	"x": 920,
+	"y": 80,
+	"wires": []
+}, {
+	"id": "7869ff9e1cd831a6",
+	"type": "comment",
+	"z": "6c526bc.dd1f894",
+	"name": "Verwijder niet lijnvluchten",
+	"info": "",
+	"x": 850,
+	"y": 160,
+	"wires": []
+}, {
+	"id": "4cc353c1b70eaa38",
+	"type": "comment",
+	"z": "6c526bc.dd1f894",
+	"name": "LIFELN mag altijd!",
+	"info": "",
+	"x": 830,
+	"y": 200,
+	"wires": []
+}, {
+	"id": "ed93a5f4.77d428",
+	"type": "inject",
+	"z": "6c526bc.dd1f894",
+	"name": "",
+	"props": [{
+		"p": "payload"
+	}, {
+		"p": "topic",
+		"vt": "str"
+	}],
+	"repeat": "",
+	"crontab": "",
+	"once": false,
+	"onceDelay": 0.1,
+	"topic": "",
+	"payload": "",
+	"payloadType": "date",
+	"x": 140,
+	"y": 40,
+	"wires": [
+		["16c80c68.7ba644"]
+	]
+}, {
+	"id": "514dfb01.2210a4",
+	"type": "mqtt in",
+	"z": "6c526bc.dd1f894",
+	"name": "MQTT Button",
+	"topic": "buttons/vliegtuig",
+	"qos": "2",
+	"datatype": "auto",
+	"broker": "5db15039.686e48",
+	"nl": false,
+	"rap": true,
+	"rh": 0,
+	"x": 110,
+	"y": 160,
+	"wires": [
+		["16c80c68.7ba644"]
+	]
+}, {
+	"id": "5db15039.686e48",
+	"type": "mqtt-broker",
+	"name": "MQTT",
+	"broker": "localhost",
+	"port": "1883",
+	"clientid": "",
+	"usetls": false,
+	"compatmode": true,
+	"keepalive": "60",
+	"cleansession": true,
+	"birthTopic": "status/nodered",
+	"birthQos": "0",
+	"birthRetain": "true",
+	"birthPayload": "activated",
+	"closeTopic": "status/nodered",
+	"closeQos": "0",
+	"closeRetain": "true",
+	"closePayload": "shutdown",
+	"willTopic": "status/nodered",
+	"willQos": "0",
+	"willRetain": "true",
+	"willPayload": "lastwill"
+}]
