@@ -16,4 +16,4 @@
 ### NodeRed Flow
 [Download deze flow](nodered-flow.json)
 
-[Flow][nodered-flow.png]
+![Flow](nodered-flow.png)
